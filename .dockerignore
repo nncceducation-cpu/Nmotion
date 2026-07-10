@@ -1,0 +1,9 @@
+.git
+__pycache__
+*.pyc
+output
+webapp/data_runtime
+data/videos/**/*.mp4
+data/videos/**/*.avi
+data/videos/**/*.mov
+.torch

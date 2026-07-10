@@ -1,0 +1,19 @@
+services:
+  nmotion:
+    build: .
+    image: nmotion:latest
+    ports:
+      - "8000:8000"
+    environment:
+      NMOTION_MAX_FRAMES: "240"   # cap frames per video (0 = no cap; slower)
+      NMOTION_MAX_WIDTH: "640"    # downscale width (0 = keep native)
+      # NMOTION_DEVICE: "cpu"     # force cpu/cuda; default auto-detect
+    volumes:
+      - nmotion_runs:/app/webapp/data_runtime   # persist processed jobs
+      - nmotion_weights:/app/.torch             # cache RAFT weights between runs
+      - ./models:/app/models                    # drop a trained model here for live prediction
+    restart: unless-stopped
+
+volumes:
+  nmotion_runs:
+  nmotion_weights:

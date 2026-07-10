@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+.env.*
+.venv/
+venv*/
+pyvenv.cfg
+
+# Test/build caches
+.pytest_cache/
+build/
+
+# Claude Code local state
+.claude/
+
+# Model weights (large); keep the small trained classifier bundle (.joblib)
+*.pt
+*.pth
+.torch/
+
+# Pipeline / runtime outputs
+output/
+*.npy
+webapp/data_runtime/
+
+# Video data (large / patient data — never track)
+data/videos/
+data/*.mp4
+data/*.mov
+mltrainingdata/
+
+# Packaging leftovers
+NmotionClean/
+Nmotion*.zip
+*.zip
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+*.sw?
+
+# Logs
+logs
+*.log

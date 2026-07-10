@@ -1,0 +1,110 @@
+==================================================================
+  NMOTION - How to run this on a new computer
+  Neonatal video movement analysis (optical flow -> features)
+==================================================================
+
+WHAT THIS IS
+  A local web app. You upload a neonatal video in your browser and it
+  extracts optical-flow movement features (and a plot). Everything runs
+  on THIS computer - no video is ever uploaded to the internet.
+
+WHAT YOU NEED
+  - Windows (Mac/Linux work too; the docker commands are identical)
+  - Docker Desktop (free)
+  - This folder
+
+------------------------------------------------------------------
+STEP 1 - INSTALL DOCKER DESKTOP  (one time)
+------------------------------------------------------------------
+  1. Download Docker Desktop from https://www.docker.com and install it.
+  2. Launch it. On first launch it may install the "WSL2" component and
+     ask you to RESTART Windows - do that.
+  3. After restart, open Docker Desktop and wait until the bottom-left
+     says "Engine running" (green). Nothing works until it is green.
+
+------------------------------------------------------------------
+STEP 2 - PUT THIS FOLDER SOMEWHERE SIMPLE
+------------------------------------------------------------------
+  Unzip / copy this "Nmotion" folder to an easy location, e.g.:
+     C:\Nmotion       or       Documents\Nmotion
+  You should see files like Dockerfile, docker-compose.yml, DEPLOY.md,
+  and the folders "pipeline" and "webapp".
+
+------------------------------------------------------------------
+STEP 3 - BUILD & START IT
+------------------------------------------------------------------
+  1. Open this Nmotion folder in File Explorer.
+  2. Click the ADDRESS BAR at the top, type the line below, press Enter:
+
+         cmd /k docker compose up --build -d
+
+     (Use the address bar - do NOT double-click run.bat; on some PCs
+      .bat files open in an editor instead of running.)
+  3. A black window opens and builds the app. The FIRST build downloads
+     about 2-3 GB (PyTorch etc.), so it takes several minutes. It is done
+     when you see:  "Container nmotion-nmotion-1  Started".
+
+------------------------------------------------------------------
+STEP 4 - USE IT
+------------------------------------------------------------------
+  Open a browser to:   http://localhost:8000
+  Drag in a video (.mp4 .avi .mov .mkv .wmv) and click "Process video".
+  You will see a 4-step progress tracker: Prepare -> Optical flow ->
+  Features -> Finalize, with a live percentage and frame counter.
+
+  NOTE: on CPU this is SLOW (minutes per clip). See the GPU step below.
+
+------------------------------------------------------------------
+STEP 5 - STOP / START LATER
+------------------------------------------------------------------
+  Stop:            cmd /k docker compose down
+  Start again:     cmd /k docker compose up -d      (instant, no rebuild)
+  (type these in the Nmotion folder's address bar)
+
+  Tip: Docker Desktop -> Settings -> General ->
+       enable "Start Docker Desktop when you sign in"
+       so the app comes back automatically after a reboot.
+
+------------------------------------------------------------------
+STEP 6 - TURN ON THE GPU  (big speedup - do this if the PC has an
+         NVIDIA graphics card; flow goes from minutes to seconds)
+------------------------------------------------------------------
+  1. Install the NVIDIA GPU driver, and in Docker Desktop enable GPU
+     support (Settings -> Resources -> WSL Integration / GPU).
+  2. In the Nmotion folder's address bar, build the GPU image:
+
+         cmd /k docker compose build --build-arg TORCH_INDEX=https://download.pytorch.org/whl/cu121
+
+  3. Open docker-compose.yml (right-click -> Open with Notepad) and,
+     under the "nmotion:" service, add a GPU reservation and set
+         NMOTION_DEVICE: "cuda"
+     The exact lines to paste are written out in DEPLOY.md ("GPU"
+     section) in this folder.
+  4. Then:   cmd /k docker compose up -d
+
+------------------------------------------------------------------
+SETTINGS YOU CAN CHANGE  (in docker-compose.yml)
+------------------------------------------------------------------
+  NMOTION_MAX_FRAMES  (default 240)  frames processed per video; lower
+                                     = faster. Set 0 for the whole video.
+  NMOTION_MAX_WIDTH   (default 640)  downscale width; lower = faster.
+  NMOTION_DEVICE                     "cpu" or "cuda" (default: auto).
+
+------------------------------------------------------------------
+OPTIONAL - ENABLE DIAGNOSIS PREDICTION
+------------------------------------------------------------------
+  Out of the box the app shows features only (no class label). To get a
+  predicted class, put labeled videos in data/videos/<class>/ folders,
+  then run:   python train.py --video-dir data/videos
+  It saves models/nmotion_model.joblib; restart the app and predictions
+  turn on. (Research signal only - NOT a medical diagnosis.)
+
+------------------------------------------------------------------
+TROUBLE?
+------------------------------------------------------------------
+  - "localhost refused to connect": the container is not running.
+    Run:  cmd /k docker compose up -d   (or start it in Docker Desktop).
+  - Build error: screenshot the black window - that is where problems
+    show up and they are usually quick to fix.
+  - Full details are in DEPLOY.md in this folder.
+==================================================================
